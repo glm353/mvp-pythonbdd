@@ -1,0 +1,46 @@
+"""behave lifecycle - wire ONE feature-scoped PlanBackend and dump the execution plan.
+
+GENERATED into features/environment.py by author/author.py (a deterministic template - NOT
+LLM-authored; lifecycle wiring is framework code, so it isn't left to the model).
+
+The whole feature shares one PlanBackend + ScenarioContext: the sample population is seeded once and
+the auto-derived chain is walked once, then every scenario asserts against that single walk. On
+after_feature the accumulated plan is printed and written to out/execution-plan.json.
+"""
+import sys
+from pathlib import Path
+
+# Make the repo root importable (mvp_bdd) regardless of where behave is invoked from.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+# Windows consoles default to cp1252; force UTF-8 so printing the plan never dies on a character.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
+from mvp_bdd import ENV_CODE
+from mvp_bdd.planner import PlanBackend, dump_plan, print_plan
+from mvp_bdd.scenario import ScenarioContext
+
+
+def before_feature(context, feature):
+    context.feature_backend = PlanBackend(env_code=ENV_CODE)
+    context.feature_ctx = ScenarioContext(context.feature_backend, env_code=ENV_CODE)
+
+
+def before_scenario(context, scenario):
+    # Reuse the one feature-scoped backend + context (seed-once / walk-once).
+    context.backend = context.feature_backend
+    context.ctx = context.feature_ctx
+
+
+def after_feature(context, feature):
+    backend = getattr(context, "feature_backend", None)
+    if backend is None:
+        return
+    backend.plan_teardown()
+    print_plan(backend)
+    path = dump_plan(backend)
+    print(f"\n[plan] wrote {len(backend.steps)} steps to {path}")

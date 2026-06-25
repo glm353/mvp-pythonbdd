@@ -1,0 +1,112 @@
+================================================================================
+[QA] SAF: SafeZone Business | Contractor Users — acceptance criteria
+================================================================================
+Test Analyst input for the Beakon-contractor -> SafeZone integration. Written in
+the real [QA] SAF story AC template (numbered "## AC-NN" sections, each with
+Given:/When:/Then:/AND:), the same format the analyst uses in the live tickets —
+e.g. SAF-327 (User Business Process). The ACs verify the deployed entities by
+INSPECTING THE ATHENA TABLES against the Doc-003 implementation guides.
+
+This file is the INPUT to the bdd-author step (author/author.py). DevOps (with
+the bdd-author skill on Bedrock) transforms these analyst ACs into the runnable
+behave feature + step bindings, mapping the analyst's "When: I inspect the table
+in AWS Athena" onto the project's auto-derived run ("When the SafeZone integration
+runs" — names zero processes; the chain is figured out from the Then's table).
+
+Scope: contractor path only (mole -> domain supplier -> business supplier -> user
+-> user-group), which terminates in the SafeZone "All Contractors" group
+(saf_group_id = 3pbmvtme6yuufgz5iwcilu2qn4).
+
+Implementation guides (Doc-003):
+  - STAGE 1 Supplier .......... https://uon.atlassian.net/wiki/spaces/SafeZone/pages/3513057281
+  - STAGE 2 User .............. https://uon.atlassian.net/wiki/spaces/SafeZone/pages/3358785573
+  - STAGE 2 User Group ........ https://uon.atlassian.net/wiki/spaces/SafeZone/pages/3531472985
+
+--------------------------------------------------------------------------------
+## AC-00 Sample records  (generic end-to-end verification)
+--------------------------------------------------------------------------------
+Given: There are sample Beakon contractor records covering: an active contractor
+with a valid AU mobile; two contractors sharing the same email; a contractor with
+a +615 (non-AU-mobile) number; and an inactive contractor:
+
+  | beakon_record_number                 | primary_email_address       | mobile_number | user_status |
+  | bddf0c00-0000-4000-8000-000000000001 | bddpoc-base@mailinator.com  | 0412345678    | Active      |
+  | bddf0c00-0000-4000-8000-000000000002 | bddpoc-dup@mailinator.com   | 0400000002    | Active      |
+  | bddf0c00-0000-4000-8000-000000000003 | bddpoc-dup@mailinator.com   | 0400000003    | Active      |
+  | bddf0c00-0000-4000-8000-000000000004 | bddpoc-615@mailinator.com   | 0512345678    | Active      |
+  | bddf0c00-0000-4000-8000-000000000005 | bddpoc-inact@mailinator.com | 0412345670    | Inactive    |
+
+When: I run the SafeZone integration and inspect the entities in AWS Athena
+Then: I expect these records to be transformed and loaded into the entities as per
+the logic defined in the Doc-003 guides.
+
+--------------------------------------------------------------------------------
+## AC-01 Active contractor onboarded into All Contractors   [SAF-187/326/327/328]
+--------------------------------------------------------------------------------
+Given: An active Beakon contractor (record ...0001) with a valid Australian mobile,
+per the Doc-003 STAGE 1 Supplier and STAGE 2 User/User Group guides
+When: I inspect business_fm_safezone.user_group in AWS Athena
+Then: I expect a row for uon_user_id = bddf0c00-0000-4000-8000-000000000001 with
+email = bddpoc-base@mailinator.com in the "All Contractors" group
+(saf_group_id = 3pbmvtme6yuufgz5iwcilu2qn4)
+
+AND: I expect the auto-derived process chain to terminate at the gotcha terminal
+business-fm-safezone-user-group
+
+AND (SAF-326, business supplier — name mapping + AU mobile -> E.164): I expect
+business_fm_safezone.supplier to have a row for supplier_id ...0001 with
+given_name = Bdd, family_name = PocContractor, email_address = bddpoc-base@mailinator.com,
+mobile_original = 0412345678, mobile_e164 = +61412345678
+
+AND (SAF-327, user — one user, flagged supplier): I expect business_fm_safezone.user
+to have a row for uon_user_id ...0001 with email = bddpoc-base@mailinator.com,
+given_name = Bdd, family_name = PocContractor, mobile_phone = +61412345678,
+is_supplier = true, no_of_sources = 1
+
+--------------------------------------------------------------------------------
+## AC-02 Contractors sharing an email collapse to a single user   [SAF-473]
+--------------------------------------------------------------------------------
+Given: Two contractors (...0002 and ...0003) share the email bddpoc-dup@mailinator.com
+(Beakon does not enforce a unique contractor email), per the Doc-003 STAGE 2 User
+de-duplication logic (one winning record per normalized email)
+When: I inspect business_fm_safezone.user in AWS Athena
+Then: I expect exactly one winning user for the shared email — the lowest supplier_id
+(uon_user_id ...0002), with is_supplier = true and no_of_sources = 1
+
+AND: I expect no user row for uon_user_id ...0003 (the higher supplier_id lost the
+de-dup; the original bug excluded BOTH, the fix keeps the lowest)
+
+AND: I expect the surviving user ...0002 to still appear in the "All Contractors"
+group (saf_group_id = 3pbmvtme6yuufgz5iwcilu2qn4)
+
+--------------------------------------------------------------------------------
+## AC-03 A +615 number is dropped, but the contractor still onboards   [SAF-489/336]
+--------------------------------------------------------------------------------
+Given: A contractor (...0004) whose number starts with +615 (not a valid Australian
+mobile), per the Doc-003 STAGE 1 Supplier rule that excludes such numbers
+When: I inspect business_fm_safezone.supplier in AWS Athena
+Then: I expect mobile_e164 to be NULL for supplier_id ...0004, while mobile_original
+keeps the raw value 0512345678
+
+AND: I expect the contractor to still onboard — business_fm_safezone.user has a row
+for uon_user_id ...0004 with mobile_phone = NULL and is_supplier = true
+
+AND: I expect user ...0004 to appear in the "All Contractors" group
+(saf_group_id = 3pbmvtme6yuufgz5iwcilu2qn4)
+
+--------------------------------------------------------------------------------
+## AC-04 An inactive contractor is excluded at the supplier boundary   [Doc-003 STAGE 1 is_active]
+--------------------------------------------------------------------------------
+Given: An inactive contractor (...0005, user_status = Inactive), excluded by the
+Doc-003 STAGE 1 Supplier is_active = true filter
+When: I inspect business_fm_safezone.supplier, .user and .user_group in AWS Athena
+Then: I expect no row in business_fm_safezone.supplier for supplier_id ...0005
+
+AND: I expect no row in business_fm_safezone.user for uon_user_id ...0005
+
+AND: I expect no row in business_fm_safezone.user_group for uon_user_id ...0005
+
+NOTE: This exclusion (rows removed by the STAGE-1 is_active filter) is distinct from
+the SAF-235/SAF-524 supplier exception report, which FLAGS dirty-but-present rows
+(e.g. invalid mobile, duplicate email) rather than removing them. The exception
+report is out of scope for this feature.

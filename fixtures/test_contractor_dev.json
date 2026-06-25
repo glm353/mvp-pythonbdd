@@ -1,0 +1,16 @@
+{
+  "_comment": "Real-dev-schema template for the contractor Given. Columns match the live Iceberg table molecular_vms_beakon_dev.contractor. The .feature data table overrides the columns that matter per scenario (beakon_record_number / primary_email_address / mobile_number / user_status); the rest are filled from here so the seeded mole row is complete. Traceable for teardown via the bddpoc email.",
+  "beakon_record_number": "bddf0c00-0000-4000-8000-000000000001",
+  "first_name": "Bdd",
+  "last_name": "PocContractor",
+  "company_name": "BDD PoC Co",
+  "skills": "[]",
+  "role": "Contractor Company",
+  "location": "[]",
+  "type": "Contractor",
+  "mobile_number": "61400000123",
+  "primary_email_address": "bddpoc-001@mailinator.com",
+  "user_status": "Active",
+  "compliance_status": "Compliant",
+  "ind": "I"
+}

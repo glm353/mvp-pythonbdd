@@ -1,0 +1,6 @@
+# Runtime deps for mvp-pythonbdd.
+#   behave  - the BDD runner that drives the planner (the only thing the BDD run needs).
+#   boto3   - used ONLY by author/author.py to call AWS Bedrock for the bdd-author step.
+#             The planned run (behave) makes NO boto3 calls to Step Functions / Athena.
+behave>=1.2.6
+boto3>=1.34

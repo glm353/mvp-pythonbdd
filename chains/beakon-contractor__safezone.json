@@ -1,0 +1,54 @@
+{
+  "_comment": "Committed chain artifact for the (source=Beakon.contractor, target=safezone) key. A trimmed copy of a real process-chain-generator (ASP-1553) run that was ALREADY executed live on dev (poc-pythonbdd SESSION-NOTES 2026-06-18/06-22). The MVP loads this as-is - it does NOT invoke the generator. Carries only what the When needs: execution order, terminals, and per-process db/table metadata.",
+  "source": {
+    "input": "Beakon.contractor",
+    "process_id": "molecular-vms-beakon-contractor"
+  },
+  "target": {
+    "system": "safezone"
+  },
+  "env_code": "dev",
+  "direction": "downstream",
+  "execution_order": [
+    "molecular-vms-beakon-contractor",
+    "domain-foundation-role-supplier",
+    "business-fm-safezone-supplier",
+    "business-fm-safezone-user",
+    "business-fm-safezone-user-group"
+  ],
+  "terminals": [
+    "business-fm-safezone-user-group"
+  ],
+  "processes": {
+    "molecular-vms-beakon-contractor": {
+      "process_id": "molecular-vms-beakon-contractor",
+      "database_name": "molecular_vms_beakon_dev",
+      "silver_table": "contractor",
+      "process_type": "molecular"
+    },
+    "domain-foundation-role-supplier": {
+      "process_id": "domain-foundation-role-supplier",
+      "database_name": "domain_foundation_role_dev",
+      "silver_table": "supplier",
+      "process_type": "domain"
+    },
+    "business-fm-safezone-supplier": {
+      "process_id": "business-fm-safezone-supplier",
+      "database_name": "business_fm_safezone_dev",
+      "silver_table": "supplier",
+      "process_type": "business"
+    },
+    "business-fm-safezone-user": {
+      "process_id": "business-fm-safezone-user",
+      "database_name": "business_fm_safezone_dev",
+      "silver_table": "user",
+      "process_type": "business"
+    },
+    "business-fm-safezone-user-group": {
+      "process_id": "business-fm-safezone-user-group",
+      "database_name": "business_fm_safezone_dev",
+      "silver_table": "user_group",
+      "process_type": "business"
+    }
+  }
+}
