@@ -82,8 +82,10 @@ out/            execution-plan.json (gitignored).
 ```
 
 `author.py --dry-run` builds and prints the prompt without calling Bedrock. Default model id is in
-[author/bedrock_config.py](author/bedrock_config.py) (`apac.` Opus 4.x inference profile) — **verify it
-in your account** (`aws bedrock list-inference-profiles`) and override `BDD_AUTHOR_BEDROCK_MODEL` if needed.
+[author/bedrock_config.py](author/bedrock_config.py): `au.anthropic.claude-opus-4-8` (Opus 4.8 inference
+profile, verified ACTIVE in account 484438948628 / ap-southeast-2 on 2026-06-26). Override
+`BDD_AUTHOR_BEDROCK_MODEL` for a different account/region (e.g. the `global.` prefix) — list options with
+`aws bedrock list-inference-profiles --region ap-southeast-2`.
 
 ## Status & next steps
 
@@ -91,9 +93,9 @@ in your account** (`aws bedrock list-inference-profiles`) and override `BDD_AUTH
   author step; docs. `features/` intentionally empty until `author.py` runs.
 - **Needs live AWS access (user has AWS/Okta; not runnable in a session without fresh SSO):**
   1. `python author/author.py` (after Okta SSO) — the **Bedrock** authoring call that fills the empty
-     `features/`. **Verify the model id first:** the default `BDD_AUTHOR_BEDROCK_MODEL` is
-     `apac.anthropic.claude-opus-4-20250514-v1:0` (unconfirmed live) — run
-     `aws bedrock list-inference-profiles --region ap-southeast-2` and override if it differs.
+     `features/`. The default `BDD_AUTHOR_BEDROCK_MODEL` is `au.anthropic.claude-opus-4-8` (verified
+     ACTIVE in account 484438948628 / ap-southeast-2 on 2026-06-26) — run
+     `aws bedrock list-inference-profiles --region ap-southeast-2` and override if your account differs.
   2. `python -m behave features/contractor_safezone.feature` — prints the plan + writes
      `out/execution-plan.json`. The behave run itself makes **no** Step Functions/Athena calls.
   (Offline, with no creds, `python -m mvp_bdd.planner --selfcheck` and `python author/author.py --dry-run`

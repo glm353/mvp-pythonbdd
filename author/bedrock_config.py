@@ -6,12 +6,11 @@ from __future__ import annotations
 
 import os
 
-# Default model: a Claude Opus 4.x **cross-region inference profile** in APAC (Sydney = ap-southeast-2
-# uses the `apac.` prefix). VERIFY the exact id available in YOUR account and override if needed:
-#   aws bedrock list-inference-profiles --region ap-southeast-2 \
-#       --query "inferenceProfileSummaries[?contains(inferenceProfileId,'opus')].inferenceProfileId"
-# then:  $env:BDD_AUTHOR_BEDROCK_MODEL = '<the id>'
-DEFAULT_MODEL = "apac.anthropic.claude-opus-4-20250514-v1:0"
+# Default model: a Claude Opus 4.x **cross-region inference profile** in APAC (Sydney = ap-southeast-2).
+# The `au.` prefix keeps inference within the Australian region; `global.` is also available.
+# Verified ACTIVE in account 484438948628 on 2026-06-26 (aws bedrock list-inference-profiles
+# --region ap-southeast-2). To override:  $env:BDD_AUTHOR_BEDROCK_MODEL = '<the id>'
+DEFAULT_MODEL = "au.anthropic.claude-opus-4-8"
 DEFAULT_REGION = "ap-southeast-2"
 
 

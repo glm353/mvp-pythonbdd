@@ -69,6 +69,6 @@ and hands to the Test Analyst for sign-off.
 
 ## Grounding — cite these, don't invent Gherkin
 - Gherkin language reference (Cucumber): https://cucumber.io/docs/gherkin/reference/
-- behave tutorial: https://behave.readthedocs.io/en/latest/tutorial.html
-- behave Gherkin notes: https://behave.readthedocs.io/en/latest/gherkin.html
+- behave tutorial: https://behave.readthedocs.io/en/latest/tutorial/
+- behave Gherkin / feature-file reference: https://behave.readthedocs.io/en/latest/gherkin/
 - Doc-003: STAGE 1 Supplier 3513057281, STAGE 2 User 3358785573, STAGE 2 User Group 3531472985.
