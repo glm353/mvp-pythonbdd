@@ -97,7 +97,8 @@ def call_bedrock(system: str, user: str) -> str:
             modelId=model,
             system=[{"text": system}],
             messages=[{"role": "user", "content": [{"text": user}]}],
-            inferenceConfig={"maxTokens": cfg.max_tokens(), "temperature": 0.0},
+            # NOTE: temperature is deprecated on Opus 4.8+ (Converse rejects it); send only maxTokens.
+            inferenceConfig={"maxTokens": cfg.max_tokens()},
         )
     except Exception as exc:  # noqa: BLE001 - surface a helpful hint for the common failures
         raise SystemExit(
